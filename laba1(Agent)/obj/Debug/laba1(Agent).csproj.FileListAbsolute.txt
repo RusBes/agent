@@ -1,0 +1,9 @@
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\bin\Debug\laba1(Agent).exe.config
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\bin\Debug\laba1(Agent).exe
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\bin\Debug\laba1(Agent).pdb
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\obj\Debug\laba1(Agent).csprojResolveAssemblyReference.cache
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\obj\Debug\laba1_Agent_.Form1.resources
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\obj\Debug\laba1_Agent_.Properties.Resources.resources
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\obj\Debug\laba1(Agent).csproj.GenerateResource.Cache
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\obj\Debug\laba1(Agent).exe
+D:\4KURS\ШІ\laba1(Agent)\laba1(Agent)\obj\Debug\laba1(Agent).pdb
