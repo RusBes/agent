@@ -10,6 +10,66 @@ using System.Windows.Forms;
 
 namespace laba1_Agent_
 {
+    enum ClientType
+    {
+        GrandParent,
+        Parent,
+        Child,
+        Pet
+    }
+    enum TimeType
+    {
+        /// <summary>
+        /// клієнт думає над замовленням
+        /// </summary>
+        MakeOrder,
+        /// <summary>
+        /// клієнт чекає на замовлення
+        /// </summary>
+        WaitOrder,
+        /// <summary>
+        /// клієнт їсть
+        /// </summary>
+        Eat,
+        /// <summary>
+        /// для тваринок
+        /// </summary>
+        None
+
+    }
+    enum AgentType
+    {
+        /// <summary>
+        /// чекає завдання, якщо немає то йде додому
+        /// </summary>
+        Wait,
+        /// <summary>
+        /// вертається додому за їжею, не зважає на інших відвідувачів
+        /// </summary>
+        ToHome,
+        /// <summary>
+        /// несе замовлення до столику, не зважає на інших відвідувачів
+        /// </summary>
+        BringOrder,
+        /// <summary>
+        /// обслуговує столик (1 хід)
+        /// </summary>
+        Service,
+        /// <summary>
+        /// чекає поки приготується їжа (1 хід)
+        /// </summary>
+        WaitFood,
+        /// <summary>
+        /// йде забирати замовлення, якщо зявляється клієнт ближче то йде до нього
+        /// </summary>
+        ReceiveOrder,
+        /// <summary>
+        /// коли не встиг віднести замовлення, то має його повернути додому а потім вільний
+        /// </summary>
+        ReturnWithOrder
+
+    }
+
     public partial class Form1 : Form
     {
         // for paint
@@ -20,10 +80,12 @@ namespace laba1_Agent_
 
         Panel[,] panels;
         Table[,] tables;
+        Table tableToOrder;
         Random rnd;
         const int maxClientCount = 6;
         Agent agent;
         Point homeP;
+        List<Client> newClients;
 
         public int T_X
         {
@@ -52,7 +114,7 @@ namespace laba1_Agent_
         {
             InitializeComponent();
             rnd = new Random();
-
+            newClients = new List<Client>();
             //Action a1 = () => listBox1.Items.Add(1);
             //Action a2 = () => listBox1.Items.Add(2);
             //Action a3 = () => listBox1.Items.Add(3);
@@ -131,109 +193,12 @@ namespace laba1_Agent_
 
 
 
-        void AddClient(Point p, ClientType type)
+        Point[] WaveAlgorithm(Point s, Point t)
         {
-            if (tables[p.X, p.Y].Count < maxClientCount)
+            if (t == s)
             {
-                Client c = new Client(type);
-                c.Panel = new Panel() { Location = chairLoc[tables[p.X, p.Y].Count], Size = chairSize };
-                tables[p.X, p.Y].Add(c);
-                panels[tables[p.X, p.Y].Location.X, tables[p.X, p.Y].Location.Y].Controls.Add(c.Panel);
+                return new Point[1] { s };
             }
-            else
-            {
-                MessageBox.Show("Недостатньо місць, оберіть інший столик!");
-            }
-        }
-        void ChooseRightDestination()
-        {
-            List<int>[,] dist = new List<int>[T_X, T_Y];
-
-            for (int i = 0; i < T_X; i++)
-            {
-                for (int j = 0; j < T_Y; j++)
-                {
-                    dist[i, j] = new List<int>();
-                    for (int clCount = 0; clCount < tables[i, j].Count; clCount++)
-                    {
-
-                    }
-                }
-            }
-        }
-
-        //void Backtracking(int n, int m, int[][] Maze)
-        //{
-        //    int Begin, End, Current;
-        //    Begin = (n - 1) * m;
-        //    End = m - 1;
-        //    int[] Way, OptimalWay;
-        //    int LengthWay, LengthOptimalWay;
-        //    Way = new int[n * m];
-        //    OptimalWay = new int[n * m];
-        //    LengthWay = 0;
-        //    LengthOptimalWay = m * n;
-        //    for (int i = 0; i < n * m; i++)
-        //        Way[i] = OptimalWay[i] = -1;
-        //    int[] Dist;
-        //    Dist = new int[n * m];
-        //    for (int i = 0; i < n; i++)
-        //        for (int j = 0; j < m; j++)
-        //            Dist[i * m + j] = (Maze[i][j] == 0 ? 0 : -1);
-        //    Way[LengthWay++] = Current = Begin;
-        //    while (LengthWay > 0)
-        //    {
-        //        if (Current == End)
-        //        {
-        //            if (LengthWay < LengthOptimalWay)
-        //            {
-        //                for (int i = 0; i < LengthWay; i++)
-        //                    OptimalWay[i] = Way[i];
-        //                LengthOptimalWay = LengthWay;
-        //            }
-        //            if (LengthWay > 0) Way[--LengthWay] = -1;
-        //            Current = Way[LengthWay - 1];
-        //        }
-        //        else {
-        //            int Neighbor = -1;
-        //            if ((Current / m - 1) >= 0 && !Insert(Way, Current - m) &&
-        //              (Dist[Current - m] == 0 || Dist[Current - m] > LengthWay)
-        //              && Dist[Current] < LengthOptimalWay)
-        //                Neighbor = Current - m;
-        //            else
-        //              if ((Current % m - 1) >= 0 && !Insert(Way, Current - 1) &&
-        //                (Dist[Current - 1] == 0 || Dist[Current - 1] > LengthWay)
-        //                && Dist[Current] < LengthOptimalWay)
-        //                Neighbor = Current - 1;
-        //            else
-        //                if ((Current % m + 1) < m && !Insert(Way, Current + 1) &&
-        //                 (Dist[Current + 1] == 0 || Dist[Current + 1] > LengthWay)
-        //                && Dist[Current] < LengthOptimalWay)
-        //                Neighbor = Current + 1;
-        //            else
-        //                 if ((Current / m + 1) < n && !Insert(Way, Current + m) &&
-        //                  (Dist[Current + m] == 0 || Dist[Current + m] > LengthWay)
-        //                 && Dist[Current] < LengthOptimalWay)
-        //                Neighbor = Current + m;
-        //            if (Neighbor != -1)
-        //            {
-        //                Way[LengthWay++] = Neighbor;
-        //                Dist[Neighbor] = Dist[Current] + 1;
-        //                Current = Neighbor;
-        //            }
-        //            else {
-        //                if (LengthWay > 0) Way[--LengthWay] = -1;
-        //                Current = Way[LengthWay - 1];
-        //            }
-        //        }
-        //    }
-        //    if (LengthOptimalWay < n * m)
-        //        cout << endl << "Yes. Length way=" << LengthOptimalWay << endl;
-        //    else cout << endl << "No" << endl;
-        //}
-
-        void WaveAlgorithm(Point s, Point t)
-        {
             List<Point> oldFront = new List<Point>();
             oldFront.Add(s);
             List<Point> newFront = new List<Point>();
@@ -247,12 +212,23 @@ namespace laba1_Agent_
                 }
             }
 
+            // перешкоди (столи)
+            List<Point> obstacles = new List<Point>();
+            for (int i = 0; i < tables.GetLength(0); i++)
+            {
+                for (int j = 0; j < tables.GetLength(1); j++)
+                {
+                    if(tables[i, j].Location != t && tables[i, j].Location != s)
+                        obstacles.Add(tables[i, j].Location);
+                }
+            }
+            // шукаю шлях до столика
             while (!newFront.Contains(t))
             {
                 newFront = new List<Point>();
                 for (int i = 0; i < oldFront.Count; i++)
                 {
-                    if (oldFront[i].X - 1 >= 0)
+                    if (oldFront[i].X - 1 >= 0 && !obstacles.Contains(new Point(oldFront[i].X - 1, oldFront[i].Y)))
                     {
                         if (TT[oldFront[i].X - 1, oldFront[i].Y] == -1)
                         {
@@ -260,7 +236,7 @@ namespace laba1_Agent_
                             newFront.Add(new Point(oldFront[i].X - 1, oldFront[i].Y));
                         }
                     }
-                    if (oldFront[i].X + 1 < P_X)
+                    if (oldFront[i].X + 1 < P_X && !obstacles.Contains(new Point(oldFront[i].X + 1, oldFront[i].Y)))
                     {
                         if (TT[oldFront[i].X + 1, oldFront[i].Y] == -1)
                         {
@@ -268,7 +244,7 @@ namespace laba1_Agent_
                             newFront.Add(new Point(oldFront[i].X + 1, oldFront[i].Y));
                         }
                     }
-                    if (oldFront[i].Y - 1 >= 0)
+                    if (oldFront[i].Y - 1 >= 0 && !obstacles.Contains(new Point(oldFront[i].X, oldFront[i].Y - 1)))
                     {
                         if (TT[oldFront[i].X, oldFront[i].Y - 1] == -1)
                         {
@@ -276,7 +252,7 @@ namespace laba1_Agent_
                             newFront.Add(new Point(oldFront[i].X, oldFront[i].Y - 1));
                         }
                     }
-                    if (oldFront[i].Y + 1 < T_Y)
+                    if (oldFront[i].Y + 1 < P_Y && !obstacles.Contains(new Point(oldFront[i].X, oldFront[i].Y + 1)))
                     {
                         if (TT[oldFront[i].X, oldFront[i].Y + 1] == -1)
                         {
@@ -287,12 +263,62 @@ namespace laba1_Agent_
                 }
 
                 if (newFront.Count == 0)
-                    return;
+                    return null;
 
                 oldFront = new List<Point>(newFront);
                 T++;
             }
 
+            List<Point> way = new List<Point>();
+            Point loc = t;
+            T = Math.Abs(t.X - s.X) + Math.Abs(t.Y - s.Y);
+            while (T != 1)
+            {
+                if (loc.X - 1 >= 0)
+                {
+                    if (TT[loc.X - 1, loc.Y] == T - 1)
+                    {
+                        loc = new Point(loc.X - 1, loc.Y);
+                        way.Add(loc);
+                        T--;
+                        continue;
+                    }
+                }
+                if (loc.X + 1 < P_X)
+                {
+                    if (TT[loc.X + 1, loc.Y] == T - 1)
+                    { 
+                        loc = new Point(loc.X + 1, loc.Y);
+                        way.Add(loc);
+                        T--;
+                        continue;
+                    }
+                }
+                if (loc.Y - 1 >= 0)
+                {
+                    if (TT[loc.X, loc.Y - 1] == T - 1)
+                    { 
+                        loc = new Point(loc.X, loc.Y - 1);
+                        way.Add(loc);
+                        T--;
+                        continue;
+                    }
+                }
+                if (loc.Y + 1 < P_Y)
+                {
+                    if (TT[loc.X, loc.Y + 1] == T - 1)
+                    { 
+                        loc = new Point(loc.X, loc.Y + 1);
+                        way.Add(loc);
+                        T--;
+                        continue;
+                    }
+                }
+
+            }
+            way.Reverse();
+            way.Add(t);
+            return way.ToArray();
 
         }
         Point GetInd(object[,] arr, object value)
@@ -307,41 +333,250 @@ namespace laba1_Agent_
             }
             return Point.Empty;
         }
-        private void butNextStep_Click(object sender, EventArgs e)
+        Point GetInd(int[,] arr, int value)
         {
-            WaveAlgorithm(homeP, new Point(0, 0));
-
-            if (agent.Type == AgentType.BringOrder)
+            for (int i = 0; i < arr.GetLength(0); i++)
             {
-
+                for (int j = 0; j < arr.GetLength(1); j++)
+                {
+                    if (arr[i, j] == value)
+                        return new Point(i, j);
+                }
             }
-
-
-            // зменшую таймери для кожного відвідувача
+            return Point.Empty;
+        }
+        void ServiceTable(Table t)
+        {
+            for (int k = 0; k < t.Count; k++)
+            {
+                t[k].TimeType = TimeType.WaitOrder;
+            }
+        }
+        void LookForBetterWay()
+        {
+            if (agent.Type == AgentType.Wait)
+            {
+                List<Point[]> list = new List<Point[]>();
+                for (int i = 0; i < tables.GetLength(0); i++)
+                {
+                    for (int j = 0; j < tables.GetLength(1); j++)
+                    {
+                        for (int k = 0; k < tables[i, j].Count; k++)
+                        {
+                            if (tables[i, j][k].TimeType == TimeType.MakeOrder)
+                            {
+                                list.Add(WaveAlgorithm(agent.Location, tables[i, j].Location));
+                            }
+                        }
+                    }
+                }
+                if (list.Count > 0)
+                {
+                    agent.Dest = GetMinWay(list);
+                    agent.Type = AgentType.ReceiveOrder;
+                }
+                else
+                {
+                    agent.Dest = WaveAlgorithm(agent.Location, homeP);
+                }
+            }
+            else if (agent.Type == AgentType.ReceiveOrder)
+            {
+                List<Point[]> list = new List<Point[]>();
+                for (int i = 0; i < tables.GetLength(0); i++)
+                {
+                    for (int j = 0; j < tables.GetLength(1); j++)
+                    {
+                        for (int k = 0; k < tables[i, j].Count; k++)
+                        {
+                            if (tables[i, j][k].TimeType == TimeType.MakeOrder)
+                            {
+                                list.Add(WaveAlgorithm(agent.Location, tables[i, j].Location));
+                            }
+                        }
+                    }
+                }
+                if (list.Count > 0)
+                {
+                    Point[] minWay = GetMinWay(list);
+                    if (minWay.Length < agent.Dest.Length)
+                        agent.Dest = minWay;
+                }
+                else
+                {
+                    agent.Type = AgentType.Wait;
+                    agent.Dest = WaveAlgorithm(agent.Location, homeP);
+                }
+            }
+        }
+        Point[] GetMinWay(List<Point[]> list)
+        {
+            int indMin = 0;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Length < list[indMin].Length)
+                {
+                    indMin = i;
+                }
+            }
+            return list[indMin];
+        }
+        void AddClient(Point p, ClientType type)
+        {
+            if (tables[p.X, p.Y].Count < maxClientCount)
+            {
+                Client c = new Client(type);
+                c.Panel = new Panel() { Location = chairLoc[tables[p.X, p.Y].Count], Size = chairSize };
+                tables[p.X, p.Y].Add(c);
+                panels[tables[p.X, p.Y].Location.X, tables[p.X, p.Y].Location.Y].Controls.Add(c.Panel);
+                
+                newClients.Add(c);
+            }
+            else
+            {
+                MessageBox.Show("Недостатньо місць, оберіть інший столик!");
+            }
+        }
+        void ChangeAgentState()
+        {
+            if (agent.Type == AgentType.ReceiveOrder && agent.Dest.Length == 0)     // якщо агент прийшов забирати замовлення
+            {
+                agent.Type = AgentType.Service;             // то обслуговує його один хід
+                return;
+            }
+            if (agent.Type == AgentType.Service)            // якщо агент щойно забрав замовлення
+            {
+                agent.Type = AgentType.ToHome;              // то має вернутись додому за їжею
+                for (int i = 0; i < tables.GetLength(0); i++)
+                {
+                    for (int j = 0; j < tables.GetLength(1); j++)
+                    {
+                        if (tables[i, j].Location == agent.Location)
+                        {
+                            tableToOrder = tables[i, j];        // запамятовую за який столик потрібно віднести
+                        }
+                    }
+                }
+                agent.Dest = WaveAlgorithm(agent.Location, homeP);
+                return;
+            }
+            if (agent.Type == AgentType.ToHome && agent.Dest.Length == 0)            // якщо агент дістався додому за їжею
+            {
+                agent.Type = AgentType.WaitFood;              // то чекає один хід поки готується їжа
+                return;
+            }
+            if (agent.Type == AgentType.WaitFood)            // якщо агент дочекався поки приготується їжа
+            {
+                agent.Type = AgentType.BringOrder;              // то має віднести її до столику
+                agent.Dest = WaveAlgorithm(agent.Location, tableToOrder.Location);
+                return;
+            }
+            if (agent.Type == AgentType.BringOrder && agent.Dest.Length == 0)   // якщо віддав заказ
+            {
+                agent.Type = AgentType.Wait;    // то вільний
+                LookForBetterWay();
+            }
+        }
+        void ChangeClientsTiming()
+        {
             for (int i = 0; i < T_X; i++)
             {
                 for (int j = 0; j < T_Y; j++)
                 {
-                    for (int clCount = 0; clCount < tables[i, j].Count; clCount++)
+                    for (int k = 0; k < tables[i, j].Count; k++)
                     {
-                        Client c = tables[i, j][clCount];
-                        if (c.TimeType == TimeType.Order)
+                        Client c = tables[i, j][k];
+                        if (c.Type != ClientType.Pet)
                         {
-                            c.OrderTime--;
-                        }
-                        else if (c.TimeType == TimeType.Wait)
-                        {
-                            c.WaitTime--;
-                        }
-                        else if (c.TimeType == TimeType.Eat)
-                        {
-                            c.EatTime--;
+                            if (c.TimeType == TimeType.MakeOrder)
+                            {
+                                if (!(c.Type == ClientType.Child && c.MakeOrderTime == 0))
+                                    c.MakeOrderTime--;
+                            }
+                            else if (c.TimeType == TimeType.WaitOrder)
+                            {
+                                if (!(c.Type == ClientType.Child && c.WaitOrderime == 0))
+                                    c.WaitOrderime--;
+                            }
+                            else if (c.TimeType == TimeType.Eat)
+                            {
+                                if (!(c.Type == ClientType.Child && c.EatTime == 0))
+                                    c.EatTime--;
+                            }
                         }
                     }
                 }
             }
-
         }
+        void ChangeClientsState()
+        {
+            for (int i = 0; i < T_X; i++)
+            {
+                for (int j = 0; j < T_Y; j++)
+                {
+                    for (int k = 0; k < tables[i, j].Count; k++)        // реагую коли клієнт(и) уходить(ять)
+                    {
+                        Client c = tables[i, j][k];
+                        if (!(c.Type == ClientType.Pet || c.Type == ClientType.Child))
+                        {
+                            if ((c.MakeOrderTime < 0 || c.WaitOrderime < 0 || c.EatTime < 0) && agent.Location != tables[i, j].Location)
+                            {
+                                panels[tables[i, j].Location.X, tables[i, j].Location.Y].Controls.Remove(c.Panel);
+                                tables[i, j].Remove(c);
+                                if (agent.Type == AgentType.BringOrder)
+                                    agent.Type = AgentType.ReturnWithOrder;
+                                LookForBetterWay();
+                            }
+                        }
+                    }
+                    if (agent.Location == tables[i, j].Location && agent.Type == AgentType.ToHome)      // після обслуговування столику
+                    {
+                        for (int k = 0; k < tables[i, j].Count; k++)
+                        {
+                            if (tables[i, j][k].Type != ClientType.Pet)              // тепер всі клієнти крім тваринок чекають на замовлення
+                            {
+                                tables[i, j][k].TimeType = TimeType.WaitOrder;
+                            }
+                        }
+                    }
+                    if (agent.Location == tables[i, j].Location && agent.Type == AgentType.BringOrder)      // коли агент приніс замовлення
+                    {
+                        for (int k = 0; k < tables[i, j].Count; k++)
+                        {
+                            if (tables[i, j][k].Type != ClientType.Pet)              // всі клієнти крім тваринок починають їсти
+                            {
+                                tables[i, j][k].TimeType = TimeType.Eat;
+                            }
+                        }
+                    }
+
+
+                    if (tables[i, j].Count > 0)         // якщо за столом лишаються тільки діти і тваринки то всі вони уходять
+                    {
+                        if (IsAllChildrenOrPets(tables[i, j]))
+                        {
+                            for (int k = 0; k < tables[i, j].Count; k++)
+                            {
+                                panels[tables[i, j].Location.X, tables[i, j].Location.Y].Controls.Remove(tables[i, j][k].Panel);
+                                tables[i, j].Remove(tables[i, j][k]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        bool IsAllChildrenOrPets(Table t)
+        {
+            for (int k = 0; k < t.Count; k++)
+            {
+                if (t[k].Type != ClientType.Pet && t[k].Type != ClientType.Child)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private void butNewClient_Click(object sender, EventArgs e)
         {
             ClientType type;
@@ -356,6 +591,21 @@ namespace laba1_Agent_
                 type = (ClientType)cbCustomerType.SelectedIndex;
 
             AddClient(loc, type);
+
+            LookForBetterWay();
+
+        }
+        private void butNextStep_Click(object sender, EventArgs e)
+        {
+            agent.MoveToDest();
+            ChangeAgentState();
+
+            ChangeClientsTiming();
+            ChangeClientsState();
+
+
+            // допоміжні штуки
+            newClients.Clear();
         }
         private void chbRandType_CheckedChanged(object sender, EventArgs e)
         {
@@ -377,355 +627,5 @@ namespace laba1_Agent_
                 nudY.Enabled = true;
             }
         }
-    }
-
-
-
-    enum ClientType
-    {
-        GrandParent,
-        Parent,
-        Child,
-        Pet
-    }
-    enum TimeType
-    {
-        Order,
-        Wait,
-        Eat
-    }
-    enum AgentType
-    {
-        Wait,
-        ToHome,
-        BringOrder,
-        Service,
-
-    }
-    class Client
-    {
-        TimeType timeType;
-        Panel panel;
-        ClientType type;
-        Point place;
-        int orderTime;
-        int waitTime;
-        int eatTime;
-        string name;
-        Color color;
-
-        // properties
-        public ClientType Type { get { return type; } }
-        public Point Place
-        {
-            get { return place; }
-            set { place = value; }
-        }
-        public int OrderTime
-        {
-            get { return orderTime; }
-            set { orderTime = value; }
-        }
-        public int WaitTime
-        {
-            get { return waitTime; }
-            set { waitTime = value; }
-        }
-        public int EatTime
-        {
-            get
-            {
-                return eatTime;
-            }
-
-            set
-            {
-                eatTime = value;
-            }
-        }
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
-        public Color Color
-        {
-            get { return color; }
-            set { color = value; }
-        }
-        public Panel Panel
-        {
-            get
-            {
-                return panel;
-            }
-
-            set
-            {
-                panel = value;
-                panel.Paint += PaintCircle;
-            }
-        }
-        internal TimeType TimeType
-        {
-            get
-            {
-                return timeType;
-            }
-
-            set
-            {
-                timeType = value;
-            }
-        }
-
-        // constructors
-        public Client(ClientType type)
-        {
-            this.type = type;
-            orderTime = GetTimeToOrder();
-            waitTime = GetMaxWaitTime();
-            eatTime = GetEatTime();
-            name = GetName();
-            color = GetColor();
-            timeType = TimeType.Order;            
-        }
-        public Client(ClientType type, Point place) : this(type)
-        {
-            this.place = place;
-        }
-
-        // private methods
-        int GetMaxWaitTime()
-        {
-            switch (type)
-            {
-                case ClientType.Child:
-                    return 4;
-                case ClientType.Parent:
-                    return 6;
-                case ClientType.GrandParent:
-                    return 5;
-                case ClientType.Pet:
-                    return 0;
-                default: return 0;
-            }
-        }
-        int GetTimeToOrder()
-        {
-            switch (type)
-            {
-                case ClientType.Child:
-                    return 5;
-                case ClientType.Parent:
-                    return 4;
-                case ClientType.GrandParent:
-                    return 7;
-                case ClientType.Pet:
-                    return 0;
-                default: return 0;
-            }
-        }
-        int GetEatTime()
-        {
-            switch (type)
-            {
-                case ClientType.Child:
-                    return 4;
-                case ClientType.Parent:
-                    return 3;
-                case ClientType.GrandParent:
-                    return 6;
-                case ClientType.Pet:
-                    return 0;
-                default: return 0;
-            }
-        }
-        string GetName()
-        {
-            switch (type)
-            {
-                case ClientType.Child:
-                    return "Дитина";
-                case ClientType.Parent:
-                    return "Дорослий";
-                case ClientType.GrandParent:
-                    return "Пожилий";
-                case ClientType.Pet:
-                    return "Тваринка";
-                default: return "";
-            }
-        }
-        Color GetColor()
-        {
-            switch (type)
-            {
-                case ClientType.Child:
-                    return Color.Red;
-                case ClientType.Parent:
-                    return Color.Green;
-                case ClientType.GrandParent:
-                    return Color.Gray;
-                case ClientType.Pet:
-                    return Color.Yellow;
-                default: return Color.Black;
-            }
-        }
-        private void PaintCircle(object sender, PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            SolidBrush b = new SolidBrush(color);
-
-            g.FillEllipse(b, 0, 0, panel.Width, panel.Height);
-        }
-    }
-
-    class Table : List<Client>
-    {
-        Point location;
-        Panel panel;
-        Color color;
-        // properties
-        public Point Location
-        {
-            get { return location; }
-            set
-            {
-                if (value.X <= 9 && value.Y <= 5)
-                    location = value;
-                else
-                    throw new IndexOutOfRangeException();
-            }
-        }
-        public Panel Panel
-        {
-            get
-            {
-                return panel;
-            }
-
-            set
-            {
-                panel = value;
-                panel.Paint += Panel_Paint;
-            }
-        }
-
-        private void Panel_Paint(object sender, PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            SolidBrush b = new SolidBrush(color);
-
-            g.FillEllipse(b, 0, 0, panel.Width, panel.Height);
-        }
-
-        // constructors
-        public Table() { }
-        public Table(Point location)
-        {
-            this.location = location;
-            color = Color.Brown;
-        }
-    }
-
-    class Agent
-    {
-        Panel panel;
-        Panel[,] space;
-        Panel locPanel;
-        Point locInPanel;
-        Point locInGeneral;
-        Size size;
-        Color color;
-        Timer timer;
-        AgentType type;
-
-        public Point Location
-        {
-            get { return locInGeneral; }
-            set
-            {
-                if (value.X <= 9 && value.Y <= 5)
-                    locInGeneral = value;
-                else
-                    throw new IndexOutOfRangeException();
-            }
-        }
-        public Point LocInPanel
-        {
-            get
-            {
-                return locInPanel;
-            }
-            set
-            {
-                locInPanel = value;
-            }
-        }
-        public AgentType Type
-        {
-            get
-            {
-                return type;
-            }
-
-            set
-            {
-                type = value;
-            }
-        }
-        public Panel Panel
-        {
-            get
-            {
-                return panel;
-            }
-
-            set
-            {
-                panel = value;
-            }
-        }
-
-        public Agent(Panel[,] space, Point loc)
-        {
-            this.space = space;
-            locPanel = space[loc.X, loc.Y];
-            locInGeneral = loc;
-            size = new Size(10, 10);
-            locInPanel = new Point(locPanel.Width - size.Width, locPanel.Height - size.Height);
-            color = Color.Blue;
-            type = AgentType.Wait;
-
-            panel = new Panel();
-            panel.BackColor = color;
-            panel.Size = size;
-            panel.Location = locInPanel;
-
-            locPanel.Controls.Add(panel);
-
-            timer = new Timer() { Interval = 800 };
-            timer.Tick += Timer_Tick;
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            timer.Stop();
-        }
-
-        public void MoveToDest(Point dest)
-        {
-
-        }
-
-        public void MoveIntoPanel(Point p)
-        {
-            locInGeneral = p;
-            locPanel.Controls.Remove(panel);
-            locPanel = space[p.X, p.Y];
-            locPanel.Controls.Add(panel);
-
-        }
-
     }
 }

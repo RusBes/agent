@@ -122,14 +122,14 @@
             // 
             // nudY
             // 
-            this.nudY.Location = new System.Drawing.Point(23, 72);
+            this.nudY.Location = new System.Drawing.Point(22, 46);
             this.nudY.Name = "nudY";
             this.nudY.Size = new System.Drawing.Size(65, 20);
             this.nudY.TabIndex = 3;
             // 
             // nudX
             // 
-            this.nudX.Location = new System.Drawing.Point(23, 46);
+            this.nudX.Location = new System.Drawing.Point(23, 72);
             this.nudX.Name = "nudX";
             this.nudX.Size = new System.Drawing.Size(65, 20);
             this.nudX.TabIndex = 2;
