@@ -37,6 +37,8 @@ namespace laba1_Agent_
         None
 
     }
+    
+
     enum AgentType
     {
         /// <summary>
@@ -115,11 +117,6 @@ namespace laba1_Agent_
             InitializeComponent();
             rnd = new Random();
             newClients = new List<Client>();
-            //Action a1 = () => listBox1.Items.Add(1);
-            //Action a2 = () => listBox1.Items.Add(2);
-            //Action a3 = () => listBox1.Items.Add(3);
-            //((a1 + a2 + a3) - (a1 + a2))();
-            //((a1 + a2 + a3) - (a1 + a3))();
 
 
             // свторюю поле з panels і столи tables
@@ -135,6 +132,8 @@ namespace laba1_Agent_
                     panel.Controls.Add(panels[i, j]);
                 }
             }
+            Label l = new Label() { Location = new Point(-1, 10), Text = "Барна стійка" };
+            panels[P_X - 1, P_Y - 1].Controls.Add(l);
             for (int i = 0; i < tables.GetLength(0); i++)
             {
                 for (int j = 0; j < tables.GetLength(1); j++)
@@ -183,12 +182,7 @@ namespace laba1_Agent_
 
             // задаю початкову точку і створюю агента
             homeP = new Point(panels.GetLength(0) - 1, panels.GetLength(1) - 1);
-            agent = new Agent(panels, homeP);
-
-            //ToolTip t = new ToolTip();
-            //t.SetToolTip(tables[0, 0].Panel, "bla");
-            //t.SetToolTip(tables[0, 0].Panel, "bla1");
-            //t.IsBalloon = true;
+            agent = new Agent(panels, homeP, tables);
         }
 
 
@@ -218,7 +212,7 @@ namespace laba1_Agent_
             {
                 for (int j = 0; j < tables.GetLength(1); j++)
                 {
-                    if(tables[i, j].Location != t && tables[i, j].Location != s)
+                    if (tables[i, j].Location != t && tables[i, j].Location != s)
                         obstacles.Add(tables[i, j].Location);
                 }
             }
@@ -271,7 +265,7 @@ namespace laba1_Agent_
 
             List<Point> way = new List<Point>();
             Point loc = t;
-            T = Math.Abs(t.X - s.X) + Math.Abs(t.Y - s.Y);
+            //T = Math.Abs(t.X - s.X) + Math.Abs(t.Y - s.Y);
             while (T != 1)
             {
                 if (loc.X - 1 >= 0)
@@ -287,7 +281,7 @@ namespace laba1_Agent_
                 if (loc.X + 1 < P_X)
                 {
                     if (TT[loc.X + 1, loc.Y] == T - 1)
-                    { 
+                    {
                         loc = new Point(loc.X + 1, loc.Y);
                         way.Add(loc);
                         T--;
@@ -297,7 +291,7 @@ namespace laba1_Agent_
                 if (loc.Y - 1 >= 0)
                 {
                     if (TT[loc.X, loc.Y - 1] == T - 1)
-                    { 
+                    {
                         loc = new Point(loc.X, loc.Y - 1);
                         way.Add(loc);
                         T--;
@@ -307,7 +301,7 @@ namespace laba1_Agent_
                 if (loc.Y + 1 < P_Y)
                 {
                     if (TT[loc.X, loc.Y + 1] == T - 1)
-                    { 
+                    {
                         loc = new Point(loc.X, loc.Y + 1);
                         way.Add(loc);
                         T--;
@@ -321,55 +315,35 @@ namespace laba1_Agent_
             return way.ToArray();
 
         }
-        Point GetInd(object[,] arr, object value)
-        {
-            for (int i = 0; i < arr.GetLength(0); i++)
-            {
-                for (int j = 0; j < arr.GetLength(1); j++)
-                {
-                    if (arr[i, j] == value)
-                        return new Point(i, j);
-                }
-            }
-            return Point.Empty;
-        }
-        Point GetInd(int[,] arr, int value)
-        {
-            for (int i = 0; i < arr.GetLength(0); i++)
-            {
-                for (int j = 0; j < arr.GetLength(1); j++)
-                {
-                    if (arr[i, j] == value)
-                        return new Point(i, j);
-                }
-            }
-            return Point.Empty;
-        }
         void ServiceTable(Table t)
         {
             for (int k = 0; k < t.Count; k++)
             {
-                t[k].TimeType = TimeType.WaitOrder;
+                if (t[k].TimeType == TimeType.MakeOrder)
+                    t[k].TimeType = TimeType.WaitOrder;
             }
         }
         void LookForBetterWay()
         {
-            if (agent.Type == AgentType.Wait)
+            //if (agent.Type == AgentType.Wait)
+            //{
+            List<Point[]> list = new List<Point[]>();
+            for (int i = 0; i < tables.GetLength(0); i++)
             {
-                List<Point[]> list = new List<Point[]>();
-                for (int i = 0; i < tables.GetLength(0); i++)
+                for (int j = 0; j < tables.GetLength(1); j++)
                 {
-                    for (int j = 0; j < tables.GetLength(1); j++)
+                    for (int k = 0; k < tables[i, j].Count; k++)
                     {
-                        for (int k = 0; k < tables[i, j].Count; k++)
+                        // шукаю всіх клієнтів хто чекає офіціанта (крім дітей і тваринок)
+                        if (tables[i, j][k].TimeType == TimeType.MakeOrder && !IsAllChildrenOrPets(tables[i, j]))
                         {
-                            if (tables[i, j][k].TimeType == TimeType.MakeOrder)
-                            {
-                                list.Add(WaveAlgorithm(agent.Location, tables[i, j].Location));
-                            }
+                            list.Add(WaveAlgorithm(agent.Location, tables[i, j].Location));
                         }
                     }
                 }
+            }
+            if (agent.Type == AgentType.Wait)
+            {
                 if (list.Count > 0)
                 {
                     agent.Dest = GetMinWay(list);
@@ -382,20 +356,20 @@ namespace laba1_Agent_
             }
             else if (agent.Type == AgentType.ReceiveOrder)
             {
-                List<Point[]> list = new List<Point[]>();
-                for (int i = 0; i < tables.GetLength(0); i++)
-                {
-                    for (int j = 0; j < tables.GetLength(1); j++)
-                    {
-                        for (int k = 0; k < tables[i, j].Count; k++)
-                        {
-                            if (tables[i, j][k].TimeType == TimeType.MakeOrder)
-                            {
-                                list.Add(WaveAlgorithm(agent.Location, tables[i, j].Location));
-                            }
-                        }
-                    }
-                }
+                //List<Point[]> list = new List<Point[]>();
+                //for (int i = 0; i < tables.GetLength(0); i++)
+                //{
+                //    for (int j = 0; j < tables.GetLength(1); j++)
+                //    {
+                //        for (int k = 0; k < tables[i, j].Count; k++)
+                //        {
+                //            if (tables[i, j][k].TimeType == TimeType.MakeOrder)
+                //            {
+                //                list.Add(WaveAlgorithm(agent.Location, tables[i, j].Location));
+                //            }
+                //        }
+                //    }
+                //}
                 if (list.Count > 0)
                 {
                     Point[] minWay = GetMinWay(list);
@@ -408,18 +382,7 @@ namespace laba1_Agent_
                     agent.Dest = WaveAlgorithm(agent.Location, homeP);
                 }
             }
-        }
-        Point[] GetMinWay(List<Point[]> list)
-        {
-            int indMin = 0;
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i].Length < list[indMin].Length)
-                {
-                    indMin = i;
-                }
-            }
-            return list[indMin];
+            //}
         }
         void AddClient(Point p, ClientType type)
         {
@@ -429,7 +392,7 @@ namespace laba1_Agent_
                 c.Panel = new Panel() { Location = chairLoc[tables[p.X, p.Y].Count], Size = chairSize };
                 tables[p.X, p.Y].Add(c);
                 panels[tables[p.X, p.Y].Location.X, tables[p.X, p.Y].Location.Y].Controls.Add(c.Panel);
-                
+
                 newClients.Add(c);
             }
             else
@@ -467,11 +430,16 @@ namespace laba1_Agent_
             }
             if (agent.Type == AgentType.WaitFood)            // якщо агент дочекався поки приготується їжа
             {
-                agent.Type = AgentType.BringOrder;              // то має віднести її до столику
-                agent.Dest = WaveAlgorithm(agent.Location, tableToOrder.Location);
+                agent.Dest = WaveAlgorithm(agent.Location, tableToOrder.Location);   // то має віднести її до столику
+                agent.Type = AgentType.BringOrder;
                 return;
             }
             if (agent.Type == AgentType.BringOrder && agent.Dest.Length == 0)   // якщо віддав заказ
+            {
+                agent.Type = AgentType.Wait;    // то вільний
+                LookForBetterWay();
+            }
+            if (agent.Type == AgentType.ReturnWithOrder && agent.Location == homeP)   // якщо вернув заказ додому
             {
                 agent.Type = AgentType.Wait;    // то вільний
                 LookForBetterWay();
@@ -485,7 +453,7 @@ namespace laba1_Agent_
                 {
                     for (int k = 0; k < tables[i, j].Count; k++)
                     {
-                        Client c = tables[i, j][k];
+                        Client c = tables[i, j][k];    // якщо дитина і її час очікування вийшов то нічого не роблю, оскільки діти мають чекати бітьків
                         if (c.Type != ClientType.Pet)
                         {
                             if (c.TimeType == TimeType.MakeOrder)
@@ -519,12 +487,43 @@ namespace laba1_Agent_
                         Client c = tables[i, j][k];
                         if (!(c.Type == ClientType.Pet || c.Type == ClientType.Child))
                         {
-                            if ((c.MakeOrderTime < 0 || c.WaitOrderime < 0 || c.EatTime < 0) && agent.Location != tables[i, j].Location)
+                            // якщо клієнт пішов
+                            if ((
+                                (c.MakeOrderTime < 0 && c.TimeType == TimeType.MakeOrder) ||
+                                (c.WaitOrderime < 0 && c.TimeType == TimeType.WaitOrder) || 
+                                (c.EatTime < 0 && c.TimeType == TimeType.Eat)) && 
+                                agent.Location != tables[i, j].Location)
                             {
                                 panels[tables[i, j].Location.X, tables[i, j].Location.Y].Controls.Remove(c.Panel);
                                 tables[i, j].Remove(c);
+                                // якщо агент відносить замовлення 
                                 if (agent.Type == AgentType.BringOrder)
-                                    agent.Type = AgentType.ReturnWithOrder;
+                                {
+                                    // якщо агент відносив замовлення до стола, за яким був клієнт який пішов
+                                    if (agent.DestP == tables[i, j].Location)
+                                    {
+                                        // якщо немає більше нікого хто чекає на замовлення або залишилися тільки діти і тваринки
+                                        if (!IsAnyInTable(TimeType.WaitOrder, tables[i, j]) || IsAllChildrenOrPets(tables[i, j]))
+                                        {
+                                            agent.Type = AgentType.ReturnWithOrder;
+                                            agent.Dest = WaveAlgorithm(agent.Location, homeP);
+                                        }
+                                    }
+                                }
+                                // якщо агент не відносить замовлення (зайнятий чимось іншим)
+                                else
+                                {
+                                    if (agent.Type != AgentType.Wait)
+                                    {
+                                        if (agent.DestP == tables[i, j].Location)
+                                        {
+                                            if (IsAllChildrenOrPets(tables[i, j]))
+                                            {
+                                                agent.Type = AgentType.Wait;
+                                            }
+                                        }
+                                    }
+                                }
                                 LookForBetterWay();
                             }
                         }
@@ -535,21 +534,25 @@ namespace laba1_Agent_
                         {
                             if (tables[i, j][k].Type != ClientType.Pet)              // тепер всі клієнти крім тваринок чекають на замовлення
                             {
-                                tables[i, j][k].TimeType = TimeType.WaitOrder;
+                                if (tables[i, j][k].TimeType == TimeType.MakeOrder)
+                                    tables[i, j][k].TimeType = TimeType.WaitOrder;
+                                //else if (tables[i, j][k].TimeType == TimeType.WaitOrder)
+                                //    tables[i, j][k].TimeType = TimeType.Eat;
                             }
                         }
                     }
-                    if (agent.Location == tables[i, j].Location && agent.Type == AgentType.BringOrder)      // коли агент приніс замовлення
+                    // коли агент приніс замовлення (коли приніс то став або wait або receive)
+                    if (agent.Location == tables[i, j].Location && (agent.Type == AgentType.Wait || agent.Type == AgentType.ReceiveOrder))
                     {
                         for (int k = 0; k < tables[i, j].Count; k++)
                         {
                             if (tables[i, j][k].Type != ClientType.Pet)              // всі клієнти крім тваринок починають їсти
                             {
-                                tables[i, j][k].TimeType = TimeType.Eat;
+                                if (tables[i, j][k].TimeType == TimeType.WaitOrder)
+                                    tables[i, j][k].TimeType = TimeType.Eat;
                             }
                         }
                     }
-
 
                     if (tables[i, j].Count > 0)         // якщо за столом лишаються тільки діти і тваринки то всі вони уходять
                     {
@@ -565,6 +568,57 @@ namespace laba1_Agent_
                 }
             }
         }
+
+
+        #region допоміжні ф-ї
+
+        Point[] GetMinWay(List<Point[]> list)
+        {
+            int indMin = 0;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Length < list[indMin].Length)
+                {
+                    indMin = i;
+                }
+            }
+            return list[indMin];
+        }
+        Point GetInd(object[,] arr, object value)
+        {
+            for (int i = 0; i < arr.GetLength(0); i++)
+            {
+                for (int j = 0; j < arr.GetLength(1); j++)
+                {
+                    if (arr[i, j] == value)
+                        return new Point(i, j);
+                }
+            }
+            return Point.Empty;
+        }
+        Point GetInd(int[,] arr, int value)
+        {
+            for (int i = 0; i < arr.GetLength(0); i++)
+            {
+                for (int j = 0; j < arr.GetLength(1); j++)
+                {
+                    if (arr[i, j] == value)
+                        return new Point(i, j);
+                }
+            }
+            return Point.Empty;
+        }
+        bool IsAnyInTable(TimeType type, Table t)
+        {
+            for (int i = 0; i < t.Count; i++)
+            {
+                if (t[i].TimeType == type)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         bool IsAllChildrenOrPets(Table t)
         {
             for (int k = 0; k < t.Count; k++)
@@ -576,9 +630,29 @@ namespace laba1_Agent_
             }
             return true;
         }
+        Point GetTableByLocation(Point loc)
+        {
+            for (int i = 0; i < T_X; i++)
+            {
+                for (int j = 0; j < T_Y; j++)
+                {
+                    if (tables[i, j].Location == loc)
+                        return new Point(i, j);
+                }
+            }
+            return Point.Empty;
+        }
+
+        #endregion
 
         private void butNewClient_Click(object sender, EventArgs e)
         {
+            List<Type> tt = new List<Type>();
+            for (int i = 0; i < Controls.Count; i++)
+            {
+                tt.Add(Controls[i].GetType());
+            }
+
             ClientType type;
             Point loc;
             if (chbRandLoc.Checked)
@@ -593,8 +667,8 @@ namespace laba1_Agent_
             AddClient(loc, type);
 
             LookForBetterWay();
-
         }
+        
         private void butNextStep_Click(object sender, EventArgs e)
         {
             agent.MoveToDest();
@@ -603,9 +677,25 @@ namespace laba1_Agent_
             ChangeClientsTiming();
             ChangeClientsState();
 
-
             // допоміжні штуки
             newClients.Clear();
+            lbInfo.Items.Clear();
+            lbInfo.Items.Add("Агент: " + agent.ToolTip.GetToolTip(agent.Panel));
+            lbInfo.Items.Add("");
+            for (int i = 0; i < T_X; i++)
+            {
+                for (int j = 0; j < T_Y; j++)
+                {
+                    if (tables[i, j].Count > 0)
+                    {
+                        lbInfo.Items.Add("Стіл (" + (i + 1) + ", " + (j + 1) + "):");
+                        for (int k = 0; k < tables[i, j].Count; k++)
+                        {
+                            lbInfo.Items.Add("\tклієнт" + (k + 1) + ": " + tables[i, j][k].toolTip.GetToolTip(tables[i, j][k].Panel));
+                        }
+                    }
+                }
+            }
         }
         private void chbRandType_CheckedChanged(object sender, EventArgs e)
         {
@@ -628,4 +718,6 @@ namespace laba1_Agent_
             }
         }
     }
+
+    
 }

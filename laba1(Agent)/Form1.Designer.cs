@@ -39,7 +39,7 @@
             this.nudX = new System.Windows.Forms.NumericUpDown();
             this.butNewClient = new System.Windows.Forms.Button();
             this.cbCustomerType = new System.Windows.Forms.ComboBox();
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.lbInfo = new System.Windows.Forms.ListBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudX)).BeginInit();
@@ -50,14 +50,14 @@
             this.panel.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel.Location = new System.Drawing.Point(0, 0);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(613, 382);
+            this.panel.Size = new System.Drawing.Size(626, 382);
             this.panel.TabIndex = 0;
             // 
             // butNextStep
             // 
-            this.butNextStep.Location = new System.Drawing.Point(619, 323);
+            this.butNextStep.Location = new System.Drawing.Point(810, 17);
             this.butNextStep.Name = "butNextStep";
-            this.butNextStep.Size = new System.Drawing.Size(177, 47);
+            this.butNextStep.Size = new System.Drawing.Size(112, 138);
             this.butNextStep.TabIndex = 1;
             this.butNextStep.Text = "Наступний крок";
             this.butNextStep.UseVisualStyleBackColor = true;
@@ -73,7 +73,7 @@
             this.groupBox1.Controls.Add(this.nudX);
             this.groupBox1.Controls.Add(this.butNewClient);
             this.groupBox1.Controls.Add(this.cbCustomerType);
-            this.groupBox1.Location = new System.Drawing.Point(619, 12);
+            this.groupBox1.Location = new System.Drawing.Point(627, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(177, 143);
             this.groupBox1.TabIndex = 2;
@@ -122,14 +122,14 @@
             // 
             // nudY
             // 
-            this.nudY.Location = new System.Drawing.Point(22, 46);
+            this.nudY.Location = new System.Drawing.Point(23, 72);
             this.nudY.Name = "nudY";
             this.nudY.Size = new System.Drawing.Size(65, 20);
             this.nudY.TabIndex = 3;
             // 
             // nudX
             // 
-            this.nudX.Location = new System.Drawing.Point(23, 72);
+            this.nudX.Location = new System.Drawing.Point(23, 46);
             this.nudX.Name = "nudX";
             this.nudX.Size = new System.Drawing.Size(65, 20);
             this.nudX.TabIndex = 2;
@@ -152,20 +152,20 @@
             this.cbCustomerType.Size = new System.Drawing.Size(82, 21);
             this.cbCustomerType.TabIndex = 0;
             // 
-            // listBox1
+            // lbInfo
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(619, 161);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(120, 95);
-            this.listBox1.TabIndex = 3;
+            this.lbInfo.FormattingEnabled = true;
+            this.lbInfo.Location = new System.Drawing.Point(627, 161);
+            this.lbInfo.Name = "lbInfo";
+            this.lbInfo.Size = new System.Drawing.Size(295, 212);
+            this.lbInfo.TabIndex = 3;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(807, 382);
-            this.Controls.Add(this.listBox1);
+            this.ClientSize = new System.Drawing.Size(934, 382);
+            this.Controls.Add(this.lbInfo);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.butNextStep);
             this.Controls.Add(this.panel);
@@ -192,7 +192,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chbRandType;
         private System.Windows.Forms.CheckBox chbRandLoc;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox lbInfo;
     }
 }
 
